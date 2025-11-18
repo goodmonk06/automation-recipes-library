@@ -1,0 +1,73 @@
+id: meeting-scheduler
+name: ミーティング自動スケジューラー
+description: フォーム送信時にGoogleカレンダーにミーティングを自動作成
+version: 1.0.0
+triggers:
+  - type: webhook
+    config:
+      endpoint: /webhooks/schedule-meeting
+      method: POST
+actions:
+  - id: create-calendar-event
+    service: gcal
+    operation: create_event
+    params:
+      calendarId: "{{calendarId}}"
+      summary: "{{meetingTitle}}"
+      description: "{{meetingDescription}}"
+      startTime: "{{startTime}}"
+      endTime: "{{endTime}}"
+      attendees: "{{attendees}}"
+      location: "{{location}}"
+  - id: notify-attendees
+    service: slack
+    operation: send_message
+    params:
+      channel: "{{notificationChannel}}"
+      message: ミーティング「{{meetingTitle}}」が{{startTime}}にスケジュールされました。
+paramsSchema:
+  calendarId:
+    type: string
+    description: Googleカレンダーの ID
+    required: true
+    default: primary
+  meetingTitle:
+    type: string
+    description: ミーティングのタイトル
+    required: true
+  meetingDescription:
+    type: string
+    description: ミーティングの詳細
+    required: false
+    default: ""
+  startTime:
+    type: string
+    description: 開始時刻 (ISO 8601)
+    required: true
+  endTime:
+    type: string
+    description: 終了時刻 (ISO 8601)
+    required: true
+  attendees:
+    type: array
+    description: 参加者のメールアドレス
+    required: false
+  location:
+    type: string
+    description: ミーティングの場所
+    required: false
+    default: Zoom
+  notificationChannel:
+    type: string
+    description: 通知を送るSlackチャンネル
+    required: false
+    default: "#general"
+metadata:
+  author: automation-team
+  tags:
+    - google-calendar
+    - slack
+    - scheduling
+    - webhook
+  createdAt: 2025-01-15T00:00:00Z
+  updatedAt: 2025-01-15T00:00:00Z

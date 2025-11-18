@@ -1,0 +1,37 @@
+id: daily-standup-reminder
+name: 毎日のスタンドアップリマインダー
+description: 平日9:00にスタンドアップミーティングのリマインダーを送信
+version: 1.0.0
+triggers:
+  - type: schedule
+    config:
+      cron: 0 9 * * 1-5
+      timezone: Asia/Tokyo
+      description: 平日9:00に実行
+actions:
+  - id: send-reminder
+    service: slack
+    operation: send_message
+    params:
+      channel: "{{channel}}"
+      message: |-
+        :wave: おはようございます！今日のスタンドアップの時間です。
+
+        今日のタスクを共有しましょう！
+      username: Standup Bot
+      icon_emoji: ":calendar:"
+paramsSchema:
+  channel:
+    type: string
+    description: リマインダーを送信するチャンネル
+    required: true
+    default: "#standup"
+metadata:
+  author: automation-team
+  tags:
+    - slack
+    - schedule
+    - reminder
+    - standup
+  createdAt: 2025-01-15T00:00:00Z
+  updatedAt: 2025-01-15T00:00:00Z

@@ -1,0 +1,44 @@
+id: error-alert-aggregator
+name: エラーアラート集約
+description: エラーログを集約して1時間ごとにサマリーを送信
+version: 1.0.0
+triggers:
+  - type: schedule
+    config:
+      cron: 0 * * * *
+      timezone: Asia/Tokyo
+      description: 毎時0分に実行
+actions:
+  - id: aggregate-errors
+    service: monitoring
+    operation: get_error_summary
+    params:
+      timeRange: 1h
+      severity:
+        - error
+        - critical
+  - id: send-alert
+    service: slack
+    operation: send_message
+    params:
+      channel: "{{alertChannel}}"
+      message: |-
+        :rotating_light: 過去1時間のエラーサマリー:
+        {{errorSummary}}
+      username: Error Monitor
+      icon_emoji: ":warning:"
+paramsSchema:
+  alertChannel:
+    type: string
+    description: アラートを送信するチャンネル
+    required: true
+    default: "#alerts"
+metadata:
+  author: automation-team
+  tags:
+    - monitoring
+    - slack
+    - alerts
+    - schedule
+  createdAt: 2025-01-15T00:00:00Z
+  updatedAt: 2025-01-15T00:00:00Z

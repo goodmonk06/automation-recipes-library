@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { parse as parseYAML } from 'yaml';
+import { parse as parseYAML, stringify as stringifyYAML } from 'yaml';
 import { Recipe, validateRecipe, RecipeValidationError } from '../models/recipe';
 
 export interface LoadResult {
@@ -159,4 +159,155 @@ export async function findRecipesByTag(
   return recipes.filter((recipe) =>
     recipe.metadata?.tags?.includes(tag)
   );
+}
+
+/**
+ * レシピIDからファイルパスを生成
+ */
+function getRecipeFilePath(dirPath: string, recipeId: string): string {
+  return path.join(dirPath, `${recipeId}.yml`);
+}
+
+/**
+ * 新しいレシピを作成
+ */
+export async function createRecipe(
+  dirPath: string,
+  recipe: Recipe
+): Promise<{ success: boolean; error?: string; filePath?: string }> {
+  try {
+    // ディレクトリの存在確認（なければ作成）
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true });
+    }
+
+    // 既存チェック
+    const existingRecipe = await findRecipeById(dirPath, recipe.id);
+    if (existingRecipe) {
+      return {
+        success: false,
+        error: `Recipe with id '${recipe.id}' already exists`,
+      };
+    }
+
+    // バリデーション
+    validateRecipe(recipe);
+
+    // ファイルパス生成
+    const filePath = getRecipeFilePath(dirPath, recipe.id);
+
+    // YAML文字列化
+    const yamlContent = stringifyYAML(recipe);
+
+    // ファイル書き込み
+    fs.writeFileSync(filePath, yamlContent, 'utf-8');
+
+    return {
+      success: true,
+      filePath,
+    };
+  } catch (error) {
+    if (error instanceof RecipeValidationError) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+/**
+ * レシピを更新
+ */
+export async function updateRecipe(
+  dirPath: string,
+  recipeId: string,
+  recipe: Recipe
+): Promise<{ success: boolean; error?: string; filePath?: string }> {
+  try {
+    // 既存チェック
+    const existingRecipe = await findRecipeById(dirPath, recipeId);
+    if (!existingRecipe) {
+      return {
+        success: false,
+        error: `Recipe with id '${recipeId}' not found`,
+      };
+    }
+
+    // IDの一貫性チェック
+    if (recipe.id !== recipeId) {
+      return {
+        success: false,
+        error: `Recipe ID mismatch: expected '${recipeId}', got '${recipe.id}'`,
+      };
+    }
+
+    // バリデーション
+    validateRecipe(recipe);
+
+    // ファイルパス生成
+    const filePath = getRecipeFilePath(dirPath, recipeId);
+
+    // YAML文字列化
+    const yamlContent = stringifyYAML(recipe);
+
+    // ファイル書き込み
+    fs.writeFileSync(filePath, yamlContent, 'utf-8');
+
+    return {
+      success: true,
+      filePath,
+    };
+  } catch (error) {
+    if (error instanceof RecipeValidationError) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+/**
+ * レシピを削除
+ */
+export async function deleteRecipe(
+  dirPath: string,
+  recipeId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // 既存チェック
+    const existingRecipe = await findRecipeById(dirPath, recipeId);
+    if (!existingRecipe) {
+      return {
+        success: false,
+        error: `Recipe with id '${recipeId}' not found`,
+      };
+    }
+
+    // ファイルパス生成
+    const filePath = getRecipeFilePath(dirPath, recipeId);
+
+    // ファイル削除
+    fs.unlinkSync(filePath);
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
 }

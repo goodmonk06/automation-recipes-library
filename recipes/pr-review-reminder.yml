@@ -1,0 +1,45 @@
+id: pr-review-reminder
+name: PRレビューリマインダー
+description: 未レビューのPRがあるときにSlackでレビュー依頼を送信
+version: 1.0.0
+triggers:
+  - type: schedule
+    config:
+      cron: 0 10,14 * * 1-5
+      timezone: Asia/Tokyo
+      description: 平日10:00と14:00に実行
+actions:
+  - id: fetch-open-prs
+    service: github
+    operation: list_pull_requests
+    params:
+      repo: "{{repository}}"
+      state: open
+      reviewStatus: pending
+  - id: send-reminder
+    service: slack
+    operation: send_message
+    params:
+      channel: "{{channel}}"
+      message: |-
+        :eyes: レビュー待ちのPRがあります！
+        {{prList}}
+paramsSchema:
+  repository:
+    type: string
+    description: GitHubリポジトリ (owner/repo)
+    required: true
+  channel:
+    type: string
+    description: 通知を送るSlackチャンネル
+    required: true
+    default: "#dev-team"
+metadata:
+  author: automation-team
+  tags:
+    - github
+    - slack
+    - pr-review
+    - schedule
+  createdAt: 2025-01-15T00:00:00Z
+  updatedAt: 2025-01-15T00:00:00Z

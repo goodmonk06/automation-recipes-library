@@ -8,12 +8,21 @@
     "recipes": "dist/cli.js"
   },
   "scripts": {
+    "dev": "tsx watch src/api/httpServer.ts",
+    "dev:build": "tsc --watch",
     "build": "tsc",
-    "dev": "tsc --watch",
     "start": "node dist/api/httpServer.js",
-    "validate": "node dist/cli.js validate",
+    "start:prod": "NODE_ENV=production node dist/api/httpServer.js",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:watch": "vitest watch",
     "lint": "eslint src --ext .ts",
-    "test": "echo \"No tests yet\" && exit 0"
+    "lint:fix": "eslint src --ext .ts --fix",
+    "validate": "node dist/cli.js validate",
+    "recipes:list": "node dist/cli.js list",
+    "recipes:seed": "tsx scripts/seed.ts",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
   },
   "keywords": [
     "automation",
@@ -31,6 +40,12 @@
   "devDependencies": {
     "@types/express": "^4.17.21",
     "@types/node": "^20.10.6",
-    "typescript": "^5.3.3"
+    "@vitest/ui": "^1.1.0",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.17.0",
+    "@typescript-eslint/parser": "^6.17.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.0"
   }
 }
