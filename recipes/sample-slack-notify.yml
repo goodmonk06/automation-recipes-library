@@ -1,0 +1,51 @@
+id: slack-notify-001
+name: Slack通知レシピ
+description: 指定されたSlackチャンネルにメッセージを送信する自動化レシピ
+version: 1.0.0
+
+triggers:
+  - type: manual
+    config:
+      description: 手動実行トリガー
+
+  - type: schedule
+    config:
+      cron: "0 9 * * 1-5"
+      timezone: "Asia/Tokyo"
+
+actions:
+  - id: send-slack-message
+    service: slack
+    operation: send_message
+    params:
+      channel: "{{channel}}"
+      message: "{{message}}"
+      username: "{{username}}"
+      icon_emoji: ":robot_face:"
+
+paramsSchema:
+  channel:
+    type: string
+    description: 送信先のSlackチャンネル名またはID
+    required: true
+    default: "#general"
+
+  message:
+    type: string
+    description: 送信するメッセージ本文
+    required: true
+
+  username:
+    type: string
+    description: 送信者として表示される名前
+    required: false
+    default: "Automation Bot"
+
+metadata:
+  author: automation-team
+  tags:
+    - slack
+    - notification
+    - communication
+  createdAt: "2025-01-01T00:00:00Z"
+  updatedAt: "2025-01-01T00:00:00Z"

@@ -1,0 +1,75 @@
+id: gcal-create-event-001
+name: Googleカレンダーイベント作成レシピ
+description: Googleカレンダーに新しいイベントを作成する自動化レシピ
+version: 1.0.0
+
+triggers:
+  - type: webhook
+    config:
+      endpoint: /webhooks/create-event
+      method: POST
+
+  - type: manual
+    config:
+      description: 手動実行トリガー
+
+actions:
+  - id: create-calendar-event
+    service: gcal
+    operation: create_event
+    params:
+      calendarId: "{{calendarId}}"
+      summary: "{{summary}}"
+      description: "{{description}}"
+      startTime: "{{startTime}}"
+      endTime: "{{endTime}}"
+      location: "{{location}}"
+      attendees: "{{attendees}}"
+
+paramsSchema:
+  calendarId:
+    type: string
+    description: 対象のGoogleカレンダーID
+    required: true
+    default: "primary"
+
+  summary:
+    type: string
+    description: イベントのタイトル
+    required: true
+
+  description:
+    type: string
+    description: イベントの詳細説明
+    required: false
+    default: ""
+
+  startTime:
+    type: string
+    description: 開始時刻 (ISO 8601形式)
+    required: true
+
+  endTime:
+    type: string
+    description: 終了時刻 (ISO 8601形式)
+    required: true
+
+  location:
+    type: string
+    description: イベントの場所
+    required: false
+    default: ""
+
+  attendees:
+    type: array
+    description: 参加者のメールアドレスリスト
+    required: false
+
+metadata:
+  author: automation-team
+  tags:
+    - google-calendar
+    - scheduling
+    - event
+  createdAt: "2025-01-01T00:00:00Z"
+  updatedAt: "2025-01-01T00:00:00Z"
